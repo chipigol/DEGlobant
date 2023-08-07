@@ -2,13 +2,24 @@ from flask import Flask, request, jsonify
 import csv
 import os
 import io
+import psycopg2
 import sqlite3
 import logging
+from psycopg2.extras import LoggingConnection
 
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
-DATABASE = 'mydatabase.db'
+
+def db_connection(dbname,user,password,host,port):
+    # Replace these values with your actual PostgreSQL database configuration
+    DATABASE = {
+        'dbname': dbname,
+        'user': user,
+        'password': password,
+        'host': host,
+        'port': port
+    }
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
