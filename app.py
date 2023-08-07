@@ -5,7 +5,7 @@ import psycopg2
 import os
 import logging
 from psycopg2.extras import LoggingConnection
-
+import unittest
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
