@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
 import csv
+import os
 import io
 import sqlite3
 import logging
-
 
 
 app = Flask(__name__)
@@ -38,7 +38,7 @@ def upload_file():
     else:
         return jsonify({'error': 'Invalid file type, please upload a CSV file'}), 400
     
-    
+
 def create_database():
     conn = sqlite3.connect(DATABASE)
     cur = conn.cursor()
@@ -114,6 +114,6 @@ def sanitize_column_name(column_name):
     return sanitized
 
 if __name__ == '__main__':
-    #app.run(debug=True)
+    os.environ['FLASK_ENV'] = 'development'  # Ensure Flask is in development mode
     create_database() 
     app.run(debug=True, use_reloader=False, use_debugger=False)
