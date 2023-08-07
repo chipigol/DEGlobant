@@ -1,8 +1,50 @@
 from flask import Flask, request, jsonify
 import csv
 import io
+import sqlite3
+
+
+
 
 app = Flask(__name__)
+DATABASE = 'mydatabase.db'
+
+
+def create_database():
+    conn = sqlite3.connect(DATABASE)
+    cur = conn.cursor()
+
+    # Create the 'departments' table
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS departments (
+            id INTEGER PRIMARY KEY,
+            department STRING
+        )
+    ''')
+
+    # Create the 'jobs' table
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS jobs (
+            id INTEGER PRIMARY KEY,
+            job STRING
+        )
+    ''')
+
+    # Create the 'hired_employees' table with foreign key constraints
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS hired_employees (
+            id INTEGER PRIMARY KEY,
+            name STRING,
+            datetime STRING,
+            department_id INTEGER,
+            job_id INTEGER,
+            FOREIGN KEY (department_id) REFERENCES departments (id),
+            FOREIGN KEY (job_id) REFERENCES jobs (id)
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
