@@ -81,3 +81,4 @@ def create_database():
 if __name__ == '__main__':
     app.run(debug=True)
     create_database() 
+    app.run(debug=True, use_reloader=False, use_debugger=False)
