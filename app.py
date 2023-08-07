@@ -9,7 +9,7 @@ import logging
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-def get_db_connection(dbname,user,password,host,port):
+def db_connection(dbname,user,password,host,port):
     # Replace these values with your actual PostgreSQL database configuration
     DATABASE = {
         'dbname': dbname,
@@ -32,75 +32,52 @@ def upload_file():
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
 
-
-
     table_name = request.args.get('table')
     if not table_name:
         return jsonify({'error': 'Table name not provided'}), 400
     
+    # Get database connection information from the request data
+
+    dbname = request.args.get('dbname')
+    if not dbname:
+        return jsonify({'error': 'Database name not provided'}), 400
+    
+    user = request.args.get('user')
+    if not user:
+        return jsonify({'error': 'User not provided'}), 400
+    
+    password = request.args.get('password')
+    if not password:
+        return jsonify({'error': 'Password not provided'}), 400
+    
+    host = request.args.get('host')
+    if not host:
+        return jsonify({'error': 'Host not provided'}), 400
+    
+    port = request.args.get('port')
+    if not port:
+        return jsonify({'error': 'Port not provided'}), 400
+
+    connection = db_connection(dbname,user,password,host,port)
+
     if file and file.filename.endswith('.csv'):
         content = file.stream.read().decode('utf-8')
         stream = io.StringIO(content)
         reader = csv.reader(stream)
         csv_content = list(reader)
 
-        save_to_db(table_name, csv_content,)
+        save_to_db(table_name, csv_content, connection)
 
+        logging.info(f"Connecting to database {dbname} on {host}:{port} as user {user}")
 
         return jsonify({'message': f'File contents saved to table {table_name}'}), 200
     else:
         return jsonify({'error': 'Invalid file type, please upload a CSV file'}), 400
+
+def save_to_db(table_name, csv_content, connection):
     
-
-
-
-
-def create_database():
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    # Create the 'departments' table
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS departments (
-            id INTEGER PRIMARY KEY,
-            department STRING
-        )
-    ''')
-
-    # Create the 'jobs' table
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS jobs (
-            id INTEGER PRIMARY KEY,
-            job STRING
-        )
-    ''')
-
-    # Create the 'hired_employees' table with foreign key constraints
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS hired_employees (
-            id INTEGER PRIMARY KEY,
-            name STRING,
-            datetime STRING,
-            department_id INTEGER,
-            job_id INTEGER,
-            FOREIGN KEY (department_id) REFERENCES departments (id),
-            FOREIGN KEY (job_id) REFERENCES jobs (id)
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
-    
-def save_to_db(table_name, csv_content,dbname,user,password,host,port):
-    # Get database connection information from the request data
-    dbname = request.form.get('dbname')
-    user = request.form.get('user')
-    password = request.form.get('password')
-    host = request.form.get('host')
-    port = request.form.get('port')
-
-    conn = get_db_connection(dbname,user,password,host,port)
-    cur = conn.cursor()
+    # conn = get_db_connection(dbname,user,password,host,port)
+    cur = connection.cursor()
 
     headers = csv_content[0]
     sanitized_headers = [sanitize_column_name(header) for header in headers]
@@ -112,7 +89,7 @@ def save_to_db(table_name, csv_content,dbname,user,password,host,port):
     for start in range(1, len(csv_content), chunk_size):  # start from 1 to skip headers
         end = start + chunk_size
         chunk = csv_content[start:end]
-
+        
         placeholders = ', '.join(['%s'] * len(headers))
         insert_query = f"INSERT INTO {table_name} VALUES ({placeholders});"
         cur.executemany(insert_query, chunk)
@@ -120,20 +97,19 @@ def save_to_db(table_name, csv_content,dbname,user,password,host,port):
         # Log the insertion
         logging.info(f"Inserted {len(chunk)} rows into {table_name}.")
 
-    conn.commit()
-    conn.close()
+    connection.commit()
+    connection.close()
 
 def sanitize_column_name(column_name):
     # Replace spaces with underscores and remove non-alphanumeric characters except for underscores
     sanitized = ''.join(e if e.isalnum() or e == '_' else '_' for e in column_name)
-
+    
     # Ensure column names don't start with a number
     if sanitized[0].isdigit():
         sanitized = "_" + sanitized
-
+    
     return sanitized
 
 if __name__ == '__main__':
     os.environ['FLASK_ENV'] = 'development'  # Ensure Flask is in development mode
-    create_database() 
     app.run(debug=True, use_reloader=False, use_debugger=False)
