@@ -3,23 +3,24 @@ import csv
 import os
 import io
 import psycopg2
-import sqlite3
 import logging
-from psycopg2.extras import LoggingConnection
 
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-def db_connection(dbname,user,password,host,port):
+def get_db_connection():
     # Replace these values with your actual PostgreSQL database configuration
     DATABASE = {
-        'dbname': dbname,
-        'user': user,
-        'password': password,
-        'host': host,
-        'port': port
+        'dbname': 'mydatabase',
+        'user': 'postgres',
+        'password': 'Pampa123',
+        'host': 'localhost',
+        'port': '5432'
     }
+
+    conn = psycopg2.connect(**DATABASE)
+    return conn
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
