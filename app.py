@@ -2,11 +2,12 @@ from flask import Flask, request, jsonify
 import csv
 import io
 import sqlite3
-
+import logging
 
 
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
 DATABASE = 'mydatabase.db'
 
 
@@ -93,6 +94,9 @@ def save_to_db(table_name, csv_content):
         placeholders = ', '.join(['?'] * len(headers))
         insert_query = f"INSERT INTO {table_name} VALUES ({placeholders});"
         cur.executemany(insert_query, chunk)
+
+        # Log the insertion
+        logging.info(f"Inserted {len(chunk)} rows into {table_name}.")
 
         
 
