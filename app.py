@@ -1,13 +1,15 @@
 from flask import Flask, request, jsonify
 import csv
-import os
 import io
 import psycopg2
+import os
 import logging
+from psycopg2.extras import LoggingConnection
 
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def db_connection(dbname,user,password,host,port):
     # Replace these values with your actual PostgreSQL database configuration
