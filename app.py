@@ -38,7 +38,6 @@ def upload_file():
     table_name = request.args.get('table')
     if not table_name:
         return jsonify({'error': 'Table name not provided'}), 400
-    
 
     dbname = request.args.get('dbname')
     if not dbname:
@@ -92,7 +91,7 @@ def save_to_db(table_name, csv_content, connection):
     cur.execute(create_table_query)
 
     chunk_size = 1000
-    for start in range(1, len(csv_content), chunk_size):
+    for start in range(1, len(csv_content), chunk_size): 
         end = start + chunk_size
         chunk = csv_content[start:end]
         
