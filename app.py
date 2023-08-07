@@ -9,14 +9,14 @@ import logging
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-def get_db_connection():
+def get_db_connection(dbname,user,password,host,port):
     # Replace these values with your actual PostgreSQL database configuration
     DATABASE = {
-        'dbname': 'mydatabase',
-        'user': 'postgres',
-        'password': 'Pampa123',
-        'host': 'host.docker.internal',
-        'port': '5432'
+        'dbname': dbname,
+        'user': user,
+        'password': password,
+        'host': host,
+        'port': port
     }
 
     conn = psycopg2.connect(**DATABASE)
@@ -32,6 +32,8 @@ def upload_file():
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
 
+
+
     table_name = request.args.get('table')
     if not table_name:
         return jsonify({'error': 'Table name not provided'}), 400
@@ -42,14 +44,16 @@ def upload_file():
         reader = csv.reader(stream)
         csv_content = list(reader)
 
-        save_to_db(table_name, csv_content)
-
+        save_to_db(table_name, csv_content,)
 
 
         return jsonify({'message': f'File contents saved to table {table_name}'}), 200
     else:
         return jsonify({'error': 'Invalid file type, please upload a CSV file'}), 400
     
+
+
+
 
 def create_database():
     conn = get_db_connection()
@@ -86,10 +90,9 @@ def create_database():
 
     conn.commit()
     conn.close()
-
     
-def save_to_db(table_name, csv_content):
-    conn = get_db_connection()
+def save_to_db(table_name, csv_content,dbname,user,password,host,port):
+    conn = get_db_connection(dbname,user,password,host,port)
     cur = conn.cursor()
 
     headers = csv_content[0]
@@ -109,8 +112,6 @@ def save_to_db(table_name, csv_content):
 
         # Log the insertion
         logging.info(f"Inserted {len(chunk)} rows into {table_name}.")
-
-        
 
     conn.commit()
     conn.close()
