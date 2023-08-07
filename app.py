@@ -21,7 +21,8 @@ def db_connection(dbname,user,password,host,port):
         'port': port
     }
 
-    conn = psycopg2.connect(**DATABASE)
+    conn = psycopg2.connect(connection_factory=LoggingConnection, **DATABASE)
+    conn.initialize(logger)
     return conn
 
 @app.route('/upload', methods=['POST'])
@@ -42,22 +43,27 @@ def upload_file():
 
     dbname = request.args.get('dbname')
     if not dbname:
+        logging.info(f"dbname: {dbname}")
         return jsonify({'error': 'Database name not provided'}), 400
     
     user = request.args.get('user')
     if not user:
+        logging.info(f"user: {user}")
         return jsonify({'error': 'User not provided'}), 400
     
     password = request.args.get('password')
     if not password:
+        logging.info(f"password: {password}")
         return jsonify({'error': 'Password not provided'}), 400
     
     host = request.args.get('host')
     if not host:
+        logging.info(f"host: {host}")
         return jsonify({'error': 'Host not provided'}), 400
     
     port = request.args.get('port')
     if not port:
+        logging.info(f"port: {port}")
         return jsonify({'error': 'Port not provided'}), 400
 
     connection = db_connection(dbname,user,password,host,port)
