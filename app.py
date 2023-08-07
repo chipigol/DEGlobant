@@ -10,8 +10,6 @@ app = Flask(__name__)
 DATABASE = 'mydatabase.db'
 
 
-
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     # check if the post request has the file part
@@ -79,6 +77,6 @@ def create_database():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #app.run(debug=True)
     create_database() 
     app.run(debug=True, use_reloader=False, use_debugger=False)
