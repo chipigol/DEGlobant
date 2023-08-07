@@ -52,7 +52,7 @@ def upload_file():
     
 
 def create_database():
-    conn = sqlite3.connect(DATABASE)
+    conn = get_db_connection()
     cur = conn.cursor()
 
     # Create the 'departments' table
@@ -89,13 +89,13 @@ def create_database():
 
     
 def save_to_db(table_name, csv_content):
-    conn = sqlite3.connect(DATABASE)
+    conn = get_db_connection()
     cur = conn.cursor()
 
     headers = csv_content[0]
     sanitized_headers = [sanitize_column_name(header) for header in headers]
 
-    create_table_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join(['{} TEXT'.format(header) for header in sanitized_headers])});"
+    create_table_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join(['{} VARCHAR'.format(header) for header in sanitized_headers])});"
     cur.execute(create_table_query)
 
     chunk_size = 1000
@@ -103,7 +103,7 @@ def save_to_db(table_name, csv_content):
         end = start + chunk_size
         chunk = csv_content[start:end]
 
-        placeholders = ', '.join(['?'] * len(headers))
+        placeholders = ', '.join(['%s'] * len(headers))
         insert_query = f"INSERT INTO {table_name} VALUES ({placeholders});"
         cur.executemany(insert_query, chunk)
 
