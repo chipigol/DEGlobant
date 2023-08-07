@@ -4,15 +4,15 @@ import io
 import psycopg2
 import os
 import logging
-from psycopg2.extras import LoggingConnection
 import unittest
+from psycopg2.extras import LoggingConnection
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def db_connection(dbname,user,password,host,port):
-    # Replace these values with your actual PostgreSQL database configuration
+
     DATABASE = {
         'dbname': dbname,
         'user': user,
@@ -39,7 +39,6 @@ def upload_file():
     if not table_name:
         return jsonify({'error': 'Table name not provided'}), 400
     
-    # Get database connection information from the request data
 
     dbname = request.args.get('dbname')
     if not dbname:
@@ -84,7 +83,6 @@ def upload_file():
 
 def save_to_db(table_name, csv_content, connection):
     
-    # conn = get_db_connection(dbname,user,password,host,port)
     cur = connection.cursor()
 
     headers = csv_content[0]
@@ -94,7 +92,7 @@ def save_to_db(table_name, csv_content, connection):
     cur.execute(create_table_query)
 
     chunk_size = 1000
-    for start in range(1, len(csv_content), chunk_size):  # start from 1 to skip headers
+    for start in range(1, len(csv_content), chunk_size):
         end = start + chunk_size
         chunk = csv_content[start:end]
         
@@ -102,17 +100,15 @@ def save_to_db(table_name, csv_content, connection):
         insert_query = f"INSERT INTO {table_name} VALUES ({placeholders});"
         cur.executemany(insert_query, chunk)
 
-        # Log the insertion
         logging.info(f"Inserted {len(chunk)} rows into {table_name}.")
 
     connection.commit()
     connection.close()
 
 def sanitize_column_name(column_name):
-    # Replace spaces with underscores and remove non-alphanumeric characters except for underscores
+
     sanitized = ''.join(e if e.isalnum() or e == '_' else '_' for e in column_name)
     
-    # Ensure column names don't start with a number
     if sanitized[0].isdigit():
         sanitized = "_" + sanitized
     
