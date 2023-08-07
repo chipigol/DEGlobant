@@ -92,6 +92,13 @@ def create_database():
     conn.close()
     
 def save_to_db(table_name, csv_content,dbname,user,password,host,port):
+    # Get database connection information from the request data
+    dbname = request.form.get('dbname')
+    user = request.form.get('user')
+    password = request.form.get('password')
+    host = request.form.get('host')
+    port = request.form.get('port')
+
     conn = get_db_connection(dbname,user,password,host,port)
     cur = conn.cursor()
 
