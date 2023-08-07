@@ -15,7 +15,7 @@ def get_db_connection():
         'dbname': 'mydatabase',
         'user': 'postgres',
         'password': 'Pampa123',
-        'host': 'localhost',
+        'host': 'host.docker.internal',
         'port': '5432'
     }
 
