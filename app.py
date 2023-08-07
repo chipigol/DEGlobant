@@ -74,7 +74,40 @@ def create_database():
     conn.commit()
     conn.close()
 
+    
+def save_to_db(table_name, csv_content):
+    conn = sqlite3.connect(DATABASE)
+    cur = conn.cursor()
 
+    headers = csv_content[0]
+    sanitized_headers = [sanitize_column_name(header) for header in headers]
+
+    create_table_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join(['{} TEXT'.format(header) for header in sanitized_headers])});"
+    cur.execute(create_table_query)
+
+    chunk_size = 1000
+    for start in range(1, len(csv_content), chunk_size):  # start from 1 to skip headers
+        end = start + chunk_size
+        chunk = csv_content[start:end]
+
+        placeholders = ', '.join(['?'] * len(headers))
+        insert_query = f"INSERT INTO {table_name} VALUES ({placeholders});"
+        cur.executemany(insert_query, chunk)
+
+        
+
+    conn.commit()
+    conn.close()
+
+def sanitize_column_name(column_name):
+    # Replace spaces with underscores and remove non-alphanumeric characters except for underscores
+    sanitized = ''.join(e if e.isalnum() or e == '_' else '_' for e in column_name)
+
+    # Ensure column names don't start with a number
+    if sanitized[0].isdigit():
+        sanitized = "_" + sanitized
+
+    return sanitized
 
 if __name__ == '__main__':
     #app.run(debug=True)
